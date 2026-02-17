@@ -1,0 +1,8 @@
+# Beads database (binary, not portable)
+.beads/*.db
+.beads/*.db-journal
+.beads/*.db-wal
+.beads/*.db-shm
+
+# Keep JSONL for git portability
+!.beads/issues.jsonl
