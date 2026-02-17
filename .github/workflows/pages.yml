@@ -3,8 +3,7 @@ name: Deploy Flight Status Board
 on:
   push:
     paths:
-      - '.beads/**'
-      - 'generate-board.sh'
+      - 'docs/**'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -18,32 +17,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install bd CLI
-        run: |
-          curl -sL https://github.com/steveyegge/beads/releases/latest/download/bd-linux-amd64 -o /usr/local/bin/bd
-          chmod +x /usr/local/bin/bd
-          bd version
-
-      - name: Generate board
-        run: bash generate-board.sh docs/index.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: docs
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
