@@ -1,40 +1,34 @@
-# Agent Instructions
+# AGENTS.md — Beads Hub
 
-This project uses **bd** (beads) for issue tracking. Run `bd onboard` to get started.
+This is the cross-agent task coordination repo for B4mad Industries.
 
-## Quick Reference
+## Before You Start
 
 ```bash
-bd ready              # Find available work
-bd show <id>          # View issue details
-bd update <id> --status in_progress  # Claim work
-bd close <id>         # Complete work
-bd sync               # Sync with git
+git pull --rebase
 ```
 
-## Landing the Plane (Session Completion)
+## Workflow
 
-**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+1. `bd ready --json` — see available tasks
+2. `bd update <id> --claim` — claim a task (atomic, prevents conflicts)
+3. Do the work
+4. `bd close <id> --reason "Completed: summary"` 
+5. `bd sync` — push changes
 
-**MANDATORY WORKFLOW:**
+## Creating Tasks
 
-1. **File issues for remaining work** - Create issues for anything that needs follow-up
-2. **Run quality gates** (if code changed) - Tests, linters, builds
-3. **Update issue status** - Close finished work, update in-progress items
-4. **PUSH TO REMOTE** - This is MANDATORY:
-   ```bash
-   git pull --rebase
-   bd sync
-   git push
-   git status  # MUST show "up to date with origin"
-   ```
-5. **Clean up** - Clear stashes, prune remote branches
-6. **Verify** - All changes committed AND pushed
-7. **Hand off** - Provide context for next session
+```bash
+bd create "Title" -p <priority> --json
+# Assign to a specific agent:
+bd create "Title" -p 2 --assign axiom --json
+bd create "Title" -p 1 --assign codemonkey --json
+```
 
-**CRITICAL RULES:**
-- Work is NOT complete until `git push` succeeds
-- NEVER stop before pushing - that leaves work stranded locally
-- NEVER say "ready to push when you are" - YOU must push
-- If push fails, resolve and retry until it succeeds
+## Rules
 
+- Always use `--json` for output
+- Always `bd sync` after changes
+- Claim before working
+- Include bead ID in git commits: `git commit -m "Fix X (bd-abc)"`
+- Don't use `bd edit` (requires interactive editor)
