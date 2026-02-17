@@ -1,0 +1,359 @@
+#!/usr/bin/env bash
+# generate-board.sh — Generate airport-style flight board from beads
+set -euo pipefail
+
+BD="${BD:-bd}"
+OUT="${1:-docs/index.html}"
+REPO_URL="https://github.com/brenner-axiom/beads-hub"
+
+mkdir -p "$(dirname "$OUT")"
+
+# Get all non-closed beads as JSON
+BEADS=$($BD list --json 2>/dev/null || echo '[]')
+
+# Count by status
+TOTAL=$(echo "$BEADS" | jq 'length')
+OPEN=$(echo "$BEADS" | jq '[.[] | select(.status == "open")] | length')
+IN_PROGRESS=$(echo "$BEADS" | jq '[.[] | select(.status == "in_progress")] | length')
+BLOCKED=$(echo "$BEADS" | jq '[.[] | select(.status == "blocked")] | length')
+
+# Generate table rows from beads JSON
+ROWS=$(echo "$BEADS" | jq -r '
+  sort_by(.priority, .updated_at) |
+  .[] |
+  {
+    id: .id,
+    title: (.title // "Untitled"),
+    status: (.status // "open"),
+    priority: (.priority // 3),
+    owner: ((.owner // "unassigned") | split("@")[0] | gsub("christoph\\+"; "")),
+    updated: ((.updated_at // .created_at // "") | split("T")[0]),
+    issue_type: (.issue_type // "task")
+  } |
+  "<tr class=\"row status-\(.status) p\(.priority)\">" +
+    "<td class=\"bead-id\"><a href=\"'$REPO_URL'/issues?q=\(.id)\">\(.id)</a></td>" +
+    "<td class=\"title\">\(.title | gsub("GH#[0-9]+: "; ""))</td>" +
+    "<td class=\"priority\">P\(.priority)</td>" +
+    "<td class=\"status\"><span class=\"status-badge\">\(.status | gsub("_"; " ") | ascii_upcase)</span></td>" +
+    "<td class=\"owner\">\(.owner)</td>" +
+    "<td class=\"updated\">\(.updated)</td>" +
+  "</tr>"
+')
+
+NOW=$(date -u '+%Y-%m-%d %H:%M UTC')
+
+cat > "$OUT" << 'HTMLHEAD'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>✈ #B4mad Flight Status Board</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✈</text></svg>">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #0a0a0a;
+    --board-bg: #111;
+    --row-bg: #1a1a1a;
+    --row-hover: #222;
+    --text: #e0e0e0;
+    --text-dim: #888;
+    --amber: #ffb800;
+    --green: #00e676;
+    --red: #ff1744;
+    --blue: #2979ff;
+    --border: #333;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  .header {
+    background: linear-gradient(180deg, #1a1a1a 0%, #111 100%);
+    border-bottom: 3px solid var(--amber);
+    padding: 24px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--amber);
+    text-transform: uppercase;
+    letter-spacing: 4px;
+  }
+
+  .header h1 .plane {
+    font-size: 32px;
+    margin-right: 8px;
+  }
+
+  .header-right {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .stat-open .stat-value { color: var(--amber); }
+  .stat-progress .stat-value { color: var(--blue); }
+  .stat-blocked .stat-value { color: var(--red); }
+  .stat-total .stat-value { color: var(--text-dim); }
+
+  .board {
+    max-width: 1200px;
+    margin: 24px auto;
+    padding: 0 16px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--board-bg);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+
+  thead th {
+    background: #222;
+    color: var(--amber);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 2px solid var(--amber);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  tbody tr:hover {
+    background: var(--row-hover);
+  }
+
+  tbody td {
+    padding: 12px 16px;
+    font-size: 13px;
+    vertical-align: middle;
+  }
+
+  .bead-id {
+    color: var(--text-dim);
+    font-size: 11px;
+  }
+
+  .bead-id a {
+    color: var(--text-dim);
+    text-decoration: none;
+  }
+
+  .bead-id a:hover {
+    color: var(--amber);
+  }
+
+  .title {
+    font-weight: 700;
+    max-width: 400px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .priority {
+    font-weight: 700;
+    font-size: 12px;
+  }
+
+  .p0 .priority { color: var(--red); }
+  .p1 .priority { color: var(--amber); }
+  .p2 .priority { color: var(--blue); }
+  .p3 .priority { color: var(--text-dim); }
+
+  .status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  .status-open .status-badge {
+    background: rgba(255, 184, 0, 0.15);
+    color: var(--amber);
+    border: 1px solid rgba(255, 184, 0, 0.3);
+  }
+
+  .status-in_progress .status-badge {
+    background: rgba(41, 121, 255, 0.15);
+    color: var(--blue);
+    border: 1px solid rgba(41, 121, 255, 0.3);
+  }
+
+  .status-blocked .status-badge {
+    background: rgba(255, 23, 68, 0.15);
+    color: var(--red);
+    border: 1px solid rgba(255, 23, 68, 0.3);
+  }
+
+  .owner {
+    color: var(--text-dim);
+    font-size: 12px;
+  }
+
+  .updated {
+    color: var(--text-dim);
+    font-size: 12px;
+  }
+
+  .footer {
+    text-align: center;
+    padding: 24px;
+    color: var(--text-dim);
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+
+  .footer a {
+    color: var(--amber);
+    text-decoration: none;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 64px 24px;
+    color: var(--text-dim);
+  }
+
+  .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-state p { font-size: 14px; }
+
+  /* Split-flap animation for freshly loaded rows */
+  @keyframes flipIn {
+    0% { transform: rotateX(-90deg); opacity: 0; }
+    100% { transform: rotateX(0deg); opacity: 1; }
+  }
+
+  tbody tr {
+    animation: flipIn 0.3s ease-out backwards;
+  }
+
+  tbody tr:nth-child(1) { animation-delay: 0.05s; }
+  tbody tr:nth-child(2) { animation-delay: 0.1s; }
+  tbody tr:nth-child(3) { animation-delay: 0.15s; }
+  tbody tr:nth-child(4) { animation-delay: 0.2s; }
+  tbody tr:nth-child(5) { animation-delay: 0.25s; }
+  tbody tr:nth-child(6) { animation-delay: 0.3s; }
+  tbody tr:nth-child(7) { animation-delay: 0.35s; }
+  tbody tr:nth-child(8) { animation-delay: 0.4s; }
+  tbody tr:nth-child(9) { animation-delay: 0.45s; }
+  tbody tr:nth-child(10) { animation-delay: 0.5s; }
+
+  @media (max-width: 768px) {
+    .header { padding: 16px; }
+    .header h1 { font-size: 18px; letter-spacing: 2px; }
+    .header-right { gap: 16px; }
+    .stat-value { font-size: 18px; }
+    tbody td { padding: 8px 10px; font-size: 12px; }
+    .title { max-width: 200px; }
+  }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <h1><span class="plane">✈</span> #B4mad Flight Status</h1>
+  </div>
+  <div class="header-right">
+HTMLHEAD
+
+cat >> "$OUT" << EOF
+    <div class="stat stat-open"><div class="stat-value">$OPEN</div><div class="stat-label">Open</div></div>
+    <div class="stat stat-progress"><div class="stat-value">$IN_PROGRESS</div><div class="stat-label">In Flight</div></div>
+    <div class="stat stat-blocked"><div class="stat-value">$BLOCKED</div><div class="stat-label">Delayed</div></div>
+    <div class="stat stat-total"><div class="stat-value">$TOTAL</div><div class="stat-label">Total</div></div>
+  </div>
+</div>
+<div class="board">
+EOF
+
+if [ "$TOTAL" -eq 0 ]; then
+  cat >> "$OUT" << 'EMPTY'
+  <div class="empty-state">
+    <div class="icon">🛬</div>
+    <p>All clear — no active beads</p>
+  </div>
+EMPTY
+else
+  cat >> "$OUT" << 'TABLEHEAD'
+  <table>
+    <thead>
+      <tr>
+        <th>Flight</th>
+        <th>Destination</th>
+        <th>Gate</th>
+        <th>Status</th>
+        <th>Crew</th>
+        <th>Updated</th>
+      </tr>
+    </thead>
+    <tbody>
+TABLEHEAD
+
+  echo "$ROWS" >> "$OUT"
+
+  cat >> "$OUT" << 'TABLEFOOT'
+    </tbody>
+  </table>
+TABLEFOOT
+fi
+
+cat >> "$OUT" << EOF
+</div>
+<div class="footer">
+  Last updated: $NOW &nbsp;·&nbsp; <a href="$REPO_URL">brenner-axiom/beads-hub</a> &nbsp;·&nbsp; Powered by <a href="https://github.com/steveyegge/beads">Beads</a>
+</div>
+</body>
+</html>
+EOF
+
+echo "✅ Generated $OUT ($TOTAL beads)"
