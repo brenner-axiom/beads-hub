@@ -51,5 +51,5 @@ gh issue list --repo "$REPO" --state open --json number,title,url,body,labels --
 done
 
 # Sync beads
-bd sync 2>/dev/null || true
-echo "🎯 Ingest complete"
+echo "🎯 Ingest complete — syncing and deploying board..."
+bash "$(dirname "$0")/sync-and-deploy.sh"
