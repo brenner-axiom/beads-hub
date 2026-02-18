@@ -30,13 +30,23 @@ gh issue list --repo "$REPO" --state open --json number,title,url,body,labels,au
     continue
   fi
 
+  # Check for /approve comment from goern
+  APPROVED_COMMENT=$(gh issue view "$NUMBER" --repo "$REPO" --json comments --jq '.comments[] | select(.author.login == "goern" and (.body == "/approve" or .body == "/approved"))' | head -1)
+
   # Check if author is in allowlist (if allowlist exists)
   if [ -n "$ALLOWLIST" ]; then
-    if ! echo "$ALLOWLIST" | grep -q "^$AUTHOR$"; then
-      echo "⏭ Issue #$NUMBER by $AUTHOR not in allowlist"
+    if ! echo "$ALLOWLIST" | grep -q "^$AUTHOR$" && [ -z "$APPROVED_COMMENT" ]; then
+      echo "⏭ Issue #$NUMBER by $AUTHOR not in allowlist and not approved"
       continue
     fi
   fi
+
+  # If approved by comment, add the label
+  if [ -n "$APPROVED_COMMENT" ]; then
+    echo "👍 Issue #$NUMBER approved by goern's comment"
+    gh issue edit "$NUMBER" --repo "$REPO" --add-label "approved" 2>/dev/null || true
+  fi
+
 
   # Check if a bead already exists for this issue (search by external-ref or notes)
   EXISTING=$(bd list --json 2>/dev/null | jq -r --arg url "$URL" '.[] | select(.notes // "" | contains($url)) | .id' | head -1)
