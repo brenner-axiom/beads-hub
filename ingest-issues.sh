@@ -7,8 +7,8 @@ git pull -q 2>/dev/null || true
 
 REPO="brenner-axiom/beads-hub"
 
-# Get all open GH issues
-gh issue list --repo "$REPO" --state open --json number,title,url,body --limit 100 | jq -c '.[]' | while read -r issue; do
+# Get all open GH issues (exclude already-ingested ones)
+gh issue list --repo "$REPO" --state open --json number,title,url,body,labels --limit 100 | jq -c '.[] | select([.labels[]?.name] | index("ingested") | not)' | while read -r issue; do
   NUMBER=$(echo "$issue" | jq -r '.number')
   TITLE=$(echo "$issue" | jq -r '.title')
   URL=$(echo "$issue" | jq -r '.url')
@@ -25,7 +25,7 @@ gh issue list --repo "$REPO" --state open --json number,title,url,body --limit 1
   if [ -n "$EXISTING" ]; then
     echo "⏭ Issue #$NUMBER already has bead $EXISTING"
     # Still tag the GH issue if not tagged
-    gh issue edit "$NUMBER" --repo "$REPO" --title "[$EXISTING] $TITLE" 2>/dev/null || true
+    gh issue edit "$NUMBER" --repo "$REPO" --title "[$EXISTING] $TITLE" --add-label "ingested" 2>/dev/null || true
     echo "✅ Tagged issue #$NUMBER with [$EXISTING]"
     continue
   fi
@@ -45,8 +45,8 @@ gh issue list --repo "$REPO" --state open --json number,title,url,body --limit 1
 
   echo "✅ Created bead $BEAD_ID for issue #$NUMBER"
 
-  # Tag the GitHub issue title with the bead ID
-  gh issue edit "$NUMBER" --repo "$REPO" --title "[$BEAD_ID] $TITLE"
+  # Tag the GitHub issue title with the bead ID and add 'ingested' label
+  gh issue edit "$NUMBER" --repo "$REPO" --title "[$BEAD_ID] $TITLE" --add-label "ingested"
   echo "✅ Tagged issue #$NUMBER → [$BEAD_ID] $TITLE"
 done
 
