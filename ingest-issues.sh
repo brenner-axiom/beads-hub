@@ -7,17 +7,35 @@ git pull -q 2>/dev/null || true
 
 REPO="brenner-axiom/beads-hub"
 
+# Read allowlist
+ALLOWLIST_FILE="ingest-allowlist.json"
+if [ -f "$ALLOWLIST_FILE" ]; then
+  ALLOWLIST=$(jq -r '.[]' "$ALLOWLIST_FILE")
+else
+  echo "⚠️  No allowlist file found. Processing all issues."
+  ALLOWLIST=""
+fi
+
 # Get all open GH issues (exclude already-ingested ones)
-gh issue list --repo "$REPO" --state open --json number,title,url,body,labels --limit 100 | jq -c '.[] | select([.labels[]?.name] | index("ingested") | not)' | while read -r issue; do
+gh issue list --repo "$REPO" --state open --json number,title,url,body,labels,author --limit 100 | jq -c '.[] | select([.labels[]?.name] | index("ingested") | not)' | while read -r issue; do
   NUMBER=$(echo "$issue" | jq -r '.number')
   TITLE=$(echo "$issue" | jq -r '.title')
   URL=$(echo "$issue" | jq -r '.url')
   BODY=$(echo "$issue" | jq -r '.body // ""')
+  AUTHOR=$(echo "$issue" | jq -r '.author.login')
 
   # Skip if title already has a bead ID tag [beads-hub-xxx]
   if [[ "$TITLE" =~ ^\[beads-hub-[a-z0-9]+\] ]]; then
     echo "⏭ Issue #$NUMBER already tagged: $TITLE"
     continue
+  fi
+
+  # Check if author is in allowlist (if allowlist exists)
+  if [ -n "$ALLOWLIST" ]; then
+    if ! echo "$ALLOWLIST" | grep -q "^$AUTHOR$"; then
+      echo "⏭ Issue #$NUMBER by $AUTHOR not in allowlist"
+      continue
+    fi
   fi
 
   # Check if a bead already exists for this issue (search by external-ref or notes)
