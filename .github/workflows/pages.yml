@@ -15,23 +15,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install bd CLI
-        run: |
-          BD_VERSION=$(curl -s https://api.github.com/repos/steveyegge/beads/releases/latest | jq -r '.tag_name' | sed 's/^v//')
-          curl -sL "https://github.com/steveyegge/beads/releases/download/v${BD_VERSION}/beads_${BD_VERSION}_linux_amd64.tar.gz" | tar xz -C /usr/local/bin bd
-          bd --version
-
-      - name: Generate flight board
-        run: |
-          BD=bd bash generate-board.sh
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
