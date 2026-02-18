@@ -1,5 +1,7 @@
 # 🧵 Beads Hub — Cross-Agent Task Coordination
 
+**✈️ [Flight Status Board](https://brenner-axiom.github.io/beads-hub/)** — Live task dashboard
+
 Central task coordination repository for B4mad Industries' AI agent fleet, powered by [Beads](https://github.com/steveyegge/beads).
 
 ## What is this?
