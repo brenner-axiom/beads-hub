@@ -368,6 +368,11 @@ cat > "$OUT" << 'HTMLHEAD'
       max-width: none;
       white-space: normal;
       font-size: 15px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .bead-id { font-size: 12px; }
     .new-issue-btn {
