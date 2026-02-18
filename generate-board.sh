@@ -31,12 +31,12 @@ ROWS=$(echo "$BEADS" | jq -r '
     issue_type: (.issue_type // "task")
   } |
   "<tr class=\"row status-\(.status) p\(.priority)\">" +
-    "<td class=\"bead-id\"><a href=\"'$REPO_URL'/issues?q=\(.id)\">\(.id)</a></td>" +
-    "<td class=\"title\">\(.title | gsub("GH#[0-9]+: "; ""))</td>" +
-    "<td class=\"priority\">P\(.priority)</td>" +
-    "<td class=\"status\"><span class=\"status-badge\">\(.status | gsub("_"; " ") | ascii_upcase)</span></td>" +
-    "<td class=\"owner\">\(.owner)</td>" +
-    "<td class=\"updated\">\(.updated)</td>" +
+    "<td class=\"bead-id\" data-label=\"Flight\"><a href=\"'$REPO_URL'/issues?q=\(.id)\">\(.id)</a></td>" +
+    "<td class=\"title\" data-label=\"Dest\">\(.title | gsub("GH#[0-9]+: "; ""))</td>" +
+    "<td class=\"priority\" data-label=\"Gate\">P\(.priority)</td>" +
+    "<td class=\"status\" data-label=\"Status\"><span class=\"status-badge\">\(.status | gsub("_"; " ") | ascii_upcase)</span></td>" +
+    "<td class=\"owner\" data-label=\"Crew\">\(.owner)</td>" +
+    "<td class=\"updated\" data-label=\"Updated\">\(.updated)</td>" +
   "</tr>"
 ')
 
@@ -95,7 +95,7 @@ cat > "$OUT" << 'HTMLHEAD'
   }
 
   .header h1 {
-    font-size: 28px;
+    font-size: 32px;
     font-weight: 700;
     color: var(--amber);
     text-transform: uppercase;
@@ -118,12 +118,12 @@ cat > "$OUT" << 'HTMLHEAD'
   }
 
   .stat-value {
-    font-size: 24px;
+    font-size: 28px;
     font-weight: 700;
   }
 
   .stat-label {
-    font-size: 10px;
+    font-size: 12px;
     color: var(--text-dim);
     text-transform: uppercase;
     letter-spacing: 2px;
@@ -152,11 +152,11 @@ cat > "$OUT" << 'HTMLHEAD'
   thead th {
     background: #222;
     color: var(--amber);
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 2px;
-    padding: 14px 16px;
+    padding: 16px 18px;
     text-align: left;
     border-bottom: 2px solid var(--amber);
   }
@@ -171,14 +171,14 @@ cat > "$OUT" << 'HTMLHEAD'
   }
 
   tbody td {
-    padding: 12px 16px;
-    font-size: 13px;
+    padding: 14px 18px;
+    font-size: 15px;
     vertical-align: middle;
   }
 
   .bead-id {
     color: var(--text-dim);
-    font-size: 11px;
+    font-size: 13px;
   }
 
   .bead-id a {
@@ -200,7 +200,7 @@ cat > "$OUT" << 'HTMLHEAD'
 
   .priority {
     font-weight: 700;
-    font-size: 12px;
+    font-size: 14px;
   }
 
   .p0 .priority { color: var(--red); }
@@ -210,9 +210,9 @@ cat > "$OUT" << 'HTMLHEAD'
 
   .status-badge {
     display: inline-block;
-    padding: 3px 10px;
+    padding: 5px 12px;
     border-radius: 3px;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: 1px;
   }
@@ -237,19 +237,43 @@ cat > "$OUT" << 'HTMLHEAD'
 
   .owner {
     color: var(--text-dim);
-    font-size: 12px;
+    font-size: 14px;
   }
 
   .updated {
     color: var(--text-dim);
-    font-size: 12px;
+    font-size: 14px;
+  }
+
+  .new-issue-btn {
+    display: inline-block;
+    background: var(--amber);
+    color: #000;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 12px 24px;
+    border-radius: 4px;
+    transition: background 0.2s, transform 0.1s;
+  }
+
+  .new-issue-btn:hover {
+    background: #ffc929;
+    transform: translateY(-1px);
+  }
+
+  .new-issue-btn:active {
+    transform: translateY(0);
   }
 
   .footer {
     text-align: center;
     padding: 24px;
     color: var(--text-dim);
-    font-size: 11px;
+    font-size: 13px;
     letter-spacing: 1px;
   }
 
@@ -289,12 +313,70 @@ cat > "$OUT" << 'HTMLHEAD'
   tbody tr:nth-child(10) { animation-delay: 0.5s; }
 
   @media (max-width: 768px) {
-    .header { padding: 16px; }
-    .header h1 { font-size: 18px; letter-spacing: 2px; }
-    .header-right { gap: 16px; }
-    .stat-value { font-size: 18px; }
-    tbody td { padding: 8px 10px; font-size: 12px; }
-    .title { max-width: 200px; }
+    .header {
+      padding: 16px;
+      flex-direction: column;
+      align-items: stretch;
+      text-align: center;
+    }
+    .header-left { justify-content: center; }
+    .header h1 { font-size: 20px; letter-spacing: 2px; }
+    .header h1 .plane { font-size: 24px; }
+    .header-right {
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .stat-value { font-size: 22px; }
+    .stat-label { font-size: 11px; }
+    .board { padding: 0 8px; margin: 16px auto; }
+
+    /* Card layout on mobile */
+    table, thead, tbody, th, td, tr {
+      display: block;
+    }
+    thead { display: none; }
+    tbody tr {
+      margin-bottom: 12px;
+      border-radius: 6px;
+      background: var(--row-bg);
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--amber);
+    }
+    tbody tr.status-in_progress { border-left-color: var(--blue); }
+    tbody tr.status-blocked { border-left-color: var(--red); }
+    tbody td {
+      padding: 4px 0;
+      font-size: 14px;
+      text-align: left;
+      border: none;
+      white-space: normal;
+    }
+    tbody td::before {
+      content: attr(data-label);
+      display: inline-block;
+      width: 80px;
+      font-size: 11px;
+      color: var(--amber);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 700;
+    }
+    .title {
+      max-width: none;
+      white-space: normal;
+      font-size: 15px;
+    }
+    .bead-id { font-size: 12px; }
+    .new-issue-btn {
+      font-size: 16px;
+      padding: 16px 32px;
+      width: 100%;
+      text-align: center;
+      min-height: 48px;
+    }
+    .footer { font-size: 12px; padding: 16px; }
   }
 </style>
 </head>
@@ -311,6 +393,7 @@ cat >> "$OUT" << EOF
     <div class="stat stat-progress"><div class="stat-value">$IN_PROGRESS</div><div class="stat-label">In Flight</div></div>
     <div class="stat stat-blocked"><div class="stat-value">$BLOCKED</div><div class="stat-label">Delayed</div></div>
     <div class="stat stat-total"><div class="stat-value">$TOTAL</div><div class="stat-label">Total</div></div>
+    <a href="https://github.com/brenner-axiom/beads-hub/issues/new" class="new-issue-btn" title="File a new issue">+ New Issue</a>
   </div>
 </div>
 <div class="board">

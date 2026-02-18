@@ -50,7 +50,7 @@
   }
 
   .header h1 {
-    font-size: 28px;
+    font-size: 32px;
     font-weight: 700;
     color: var(--amber);
     text-transform: uppercase;
@@ -73,12 +73,12 @@
   }
 
   .stat-value {
-    font-size: 24px;
+    font-size: 28px;
     font-weight: 700;
   }
 
   .stat-label {
-    font-size: 10px;
+    font-size: 12px;
     color: var(--text-dim);
     text-transform: uppercase;
     letter-spacing: 2px;
@@ -107,11 +107,11 @@
   thead th {
     background: #222;
     color: var(--amber);
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 2px;
-    padding: 14px 16px;
+    padding: 16px 18px;
     text-align: left;
     border-bottom: 2px solid var(--amber);
   }
@@ -126,14 +126,14 @@
   }
 
   tbody td {
-    padding: 12px 16px;
-    font-size: 13px;
+    padding: 14px 18px;
+    font-size: 15px;
     vertical-align: middle;
   }
 
   .bead-id {
     color: var(--text-dim);
-    font-size: 11px;
+    font-size: 13px;
   }
 
   .bead-id a {
@@ -155,7 +155,7 @@
 
   .priority {
     font-weight: 700;
-    font-size: 12px;
+    font-size: 14px;
   }
 
   .p0 .priority { color: var(--red); }
@@ -165,9 +165,9 @@
 
   .status-badge {
     display: inline-block;
-    padding: 3px 10px;
+    padding: 5px 12px;
     border-radius: 3px;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: 1px;
   }
@@ -192,19 +192,43 @@
 
   .owner {
     color: var(--text-dim);
-    font-size: 12px;
+    font-size: 14px;
   }
 
   .updated {
     color: var(--text-dim);
-    font-size: 12px;
+    font-size: 14px;
+  }
+
+  .new-issue-btn {
+    display: inline-block;
+    background: var(--amber);
+    color: #000;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 12px 24px;
+    border-radius: 4px;
+    transition: background 0.2s, transform 0.1s;
+  }
+
+  .new-issue-btn:hover {
+    background: #ffc929;
+    transform: translateY(-1px);
+  }
+
+  .new-issue-btn:active {
+    transform: translateY(0);
   }
 
   .footer {
     text-align: center;
     padding: 24px;
     color: var(--text-dim);
-    font-size: 11px;
+    font-size: 13px;
     letter-spacing: 1px;
   }
 
@@ -244,12 +268,70 @@
   tbody tr:nth-child(10) { animation-delay: 0.5s; }
 
   @media (max-width: 768px) {
-    .header { padding: 16px; }
-    .header h1 { font-size: 18px; letter-spacing: 2px; }
-    .header-right { gap: 16px; }
-    .stat-value { font-size: 18px; }
-    tbody td { padding: 8px 10px; font-size: 12px; }
-    .title { max-width: 200px; }
+    .header {
+      padding: 16px;
+      flex-direction: column;
+      align-items: stretch;
+      text-align: center;
+    }
+    .header-left { justify-content: center; }
+    .header h1 { font-size: 20px; letter-spacing: 2px; }
+    .header h1 .plane { font-size: 24px; }
+    .header-right {
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .stat-value { font-size: 22px; }
+    .stat-label { font-size: 11px; }
+    .board { padding: 0 8px; margin: 16px auto; }
+
+    /* Card layout on mobile */
+    table, thead, tbody, th, td, tr {
+      display: block;
+    }
+    thead { display: none; }
+    tbody tr {
+      margin-bottom: 12px;
+      border-radius: 6px;
+      background: var(--row-bg);
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--amber);
+    }
+    tbody tr.status-in_progress { border-left-color: var(--blue); }
+    tbody tr.status-blocked { border-left-color: var(--red); }
+    tbody td {
+      padding: 4px 0;
+      font-size: 14px;
+      text-align: left;
+      border: none;
+      white-space: normal;
+    }
+    tbody td::before {
+      content: attr(data-label);
+      display: inline-block;
+      width: 80px;
+      font-size: 11px;
+      color: var(--amber);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 700;
+    }
+    .title {
+      max-width: none;
+      white-space: normal;
+      font-size: 15px;
+    }
+    .bead-id { font-size: 12px; }
+    .new-issue-btn {
+      font-size: 16px;
+      padding: 16px 32px;
+      width: 100%;
+      text-align: center;
+      min-height: 48px;
+    }
+    .footer { font-size: 12px; padding: 16px; }
   }
 </style>
 </head>
@@ -259,10 +341,11 @@
     <h1><span class="plane">✈</span> #B4mad Flight Status</h1>
   </div>
   <div class="header-right">
-    <div class="stat stat-open"><div class="stat-value">3</div><div class="stat-label">Open</div></div>
-    <div class="stat stat-progress"><div class="stat-value">1</div><div class="stat-label">In Flight</div></div>
+    <div class="stat stat-open"><div class="stat-value">0</div><div class="stat-label">Open</div></div>
+    <div class="stat stat-progress"><div class="stat-value">4</div><div class="stat-label">In Flight</div></div>
     <div class="stat stat-blocked"><div class="stat-value">0</div><div class="stat-label">Delayed</div></div>
     <div class="stat stat-total"><div class="stat-value">4</div><div class="stat-label">Total</div></div>
+    <a href="https://github.com/brenner-axiom/beads-hub/issues/new" class="new-issue-btn" title="File a new issue">+ New Issue</a>
   </div>
 </div>
 <div class="board">
@@ -278,15 +361,15 @@
       </tr>
     </thead>
     <tbody>
-<tr class="row status-in_progress p1"><td class="bead-id"><a href="https://github.com/brenner-axiom/beads-hub/issues?q=beads-hub-zb1">beads-hub-zb1</a></td><td class="title">Investigate how to quantize local qwen3-coder-next model for better VRAM fit</td><td class="priority">P1</td><td class="status"><span class="status-badge">IN PROGRESS</span></td><td class="owner">brenner</td><td class="updated">2026-02-17</td></tr>
-<tr class="row status-open p2"><td class="bead-id"><a href="https://github.com/brenner-axiom/beads-hub/issues?q=beads-hub-asg">beads-hub-asg</a></td><td class="title">todoist shopping list reader</td><td class="priority">P2</td><td class="status"><span class="status-badge">OPEN</span></td><td class="owner">brenner</td><td class="updated">2026-02-17</td></tr>
-<tr class="row status-open p2"><td class="bead-id"><a href="https://github.com/brenner-axiom/beads-hub/issues?q=beads-hub-fya">beads-hub-fya</a></td><td class="title">Refine flight status</td><td class="priority">P2</td><td class="status"><span class="status-badge">OPEN</span></td><td class="owner">brenner</td><td class="updated">2026-02-17</td></tr>
-<tr class="row status-open p2"><td class="bead-id"><a href="https://github.com/brenner-axiom/beads-hub/issues?q=beads-hub-8d8">beads-hub-8d8</a></td><td class="title">flight status page</td><td class="priority">P2</td><td class="status"><span class="status-badge">OPEN</span></td><td class="owner">brenner</td><td class="updated">2026-02-17</td></tr>
+<tr class="row status-in_progress p1"><td class="bead-id" data-label="Flight"><a href="https://github.com/brenner-axiom/beads-hub/issues?q=beads-hub-zb1">beads-hub-zb1</a></td><td class="title" data-label="Dest">Investigate how to quantize local qwen3-coder-next model for better VRAM fit</td><td class="priority" data-label="Gate">P1</td><td class="status" data-label="Status"><span class="status-badge">IN PROGRESS</span></td><td class="owner" data-label="Crew">brenner</td><td class="updated" data-label="Updated">2026-02-17</td></tr>
+<tr class="row status-in_progress p2"><td class="bead-id" data-label="Flight"><a href="https://github.com/brenner-axiom/beads-hub/issues?q=beads-hub-8d8">beads-hub-8d8</a></td><td class="title" data-label="Dest">flight status page</td><td class="priority" data-label="Gate">P2</td><td class="status" data-label="Status"><span class="status-badge">IN PROGRESS</span></td><td class="owner" data-label="Crew">brenner</td><td class="updated" data-label="Updated">2026-02-18</td></tr>
+<tr class="row status-in_progress p2"><td class="bead-id" data-label="Flight"><a href="https://github.com/brenner-axiom/beads-hub/issues?q=beads-hub-asg">beads-hub-asg</a></td><td class="title" data-label="Dest">todoist shopping list reader</td><td class="priority" data-label="Gate">P2</td><td class="status" data-label="Status"><span class="status-badge">IN PROGRESS</span></td><td class="owner" data-label="Crew">brenner</td><td class="updated" data-label="Updated">2026-02-18</td></tr>
+<tr class="row status-in_progress p2"><td class="bead-id" data-label="Flight"><a href="https://github.com/brenner-axiom/beads-hub/issues?q=beads-hub-fya">beads-hub-fya</a></td><td class="title" data-label="Dest">Refine flight status</td><td class="priority" data-label="Gate">P2</td><td class="status" data-label="Status"><span class="status-badge">IN PROGRESS</span></td><td class="owner" data-label="Crew">brenner</td><td class="updated" data-label="Updated">2026-02-18</td></tr>
     </tbody>
   </table>
 </div>
 <div class="footer">
-  Last updated: 2026-02-18 07:32 UTC &nbsp;·&nbsp; <a href="https://github.com/brenner-axiom/beads-hub">brenner-axiom/beads-hub</a> &nbsp;·&nbsp; Powered by <a href="https://github.com/steveyegge/beads">Beads</a>
+  Last updated: 2026-02-18 07:35 UTC &nbsp;·&nbsp; <a href="https://github.com/brenner-axiom/beads-hub">brenner-axiom/beads-hub</a> &nbsp;·&nbsp; Powered by <a href="https://github.com/steveyegge/beads">Beads</a>
 </div>
 </body>
 </html>
