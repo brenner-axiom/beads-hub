@@ -28,10 +28,11 @@ ROWS=$(echo "$BEADS" | jq -r '
     priority: (.priority // 3),
     owner: ((.owner // "unassigned") | split("@")[0] | gsub("christoph\\+"; "")),
     updated: ((.updated_at // .created_at // "") | split("T")[0]),
-    issue_type: (.issue_type // "task")
+    issue_type: (.issue_type // "task"),
+    issue_url: ((.notes // "") | capture("GitHub issue: (?<url>https://[^\\s]+)").url // null)
   } |
   "<tr class=\"row status-\(.status) p\(.priority)\">" +
-    "<td class=\"bead-id\" data-label=\"Flight\"><a href=\"'$REPO_URL'/issues?q=\(.id)\">\(.id)</a></td>" +
+    "<td class=\"bead-id\" data-label=\"Flight\"><a href=\"\(if .issue_url then .issue_url else "'$REPO_URL'/issues?q=\(.id)" end)\">\(.id)</a></td>" +
     "<td class=\"title\" data-label=\"Dest\">\(.title | gsub("GH#[0-9]+: "; ""))</td>" +
     "<td class=\"priority\" data-label=\"Gate\">P\(.priority)</td>" +
     "<td class=\"status\" data-label=\"Status\"><span class=\"status-badge\">\(.status | gsub("_"; " ") | ascii_upcase)</span></td>" +
