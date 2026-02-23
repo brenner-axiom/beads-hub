@@ -1,0 +1,27 @@
+{
+  "name": "openclaw-a2a-client",
+  "version": "1.0.0",
+  "description": "A2A Client for OpenClaw agents to communicate with external agents",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "a2a",
+    "agent",
+    "openclaw",
+    "jsonrpc",
+    "synchronization"
+  ],
+  "author": "OpenClaw Team",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "node-sse": "^0.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/openclaw/beads-hub.git"
+  },
+  "homepage": "https://github.com/openclaw/beads-hub"
+}
