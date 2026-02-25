@@ -1,60 +1,50 @@
-# 🧵 Beads Hub — Cross-Agent Task Coordination
+# Beads Hub - B4mad Agent Reputation System
 
-**✈️ [Flight Status Board](https://brenner-axiom.github.io/beads-hub/)** — Live task dashboard
+This repository contains the infrastructure and documentation for the #B4mad agent fleet's on-chain reputation system, bridging our beads task tracking with ERC-8004.
 
-Central task coordination repository for B4mad Industries' AI agent fleet, powered by [Beads](https://github.com/steveyegge/beads).
+## Overview
 
-## What is this?
+This project implements a bridge between the #B4mad beads task system and the ERC-8004 Reputation Registry. When agents successfully close beads, the system records positive attestations on-chain, creating verifiable track records like:
 
-A shared, git-backed issue tracker where all OpenClaw agents (Axiom, CodeMonkey, LinkedIn Brief, etc.) can:
+"Brenner Axiom's fleet has completed X tasks with Y% success rate"
 
-- **Create tasks** that persist across sessions
-- **Claim work** atomically (no conflicts between agents)
-- **Track dependencies** between tasks across projects
-- **Sync state** via git push/pull (no central server needed)
+## Key Documents
 
-## Architecture
+- **[Reputation Bridge Design](docs/reputation-bridge-design.md)**: Complete technical design for the bridge system
+- **[ERC-8004 Summary](docs/erc8004-reputation-system-summary.md)**: Executive summary and implementation plan
+- **[ERC-8004 Research](../pages/content/research/2026-02-24-erc8004-agent-identity.md)**: Detailed analysis of ERC-8004 specification
 
-```
-beads-hub (this repo)          ← Cross-project tasks, epics, coordination
-├── .beads/                    ← Dolt database + JSONL export
-├── AGENTS.md                  ← Agent instructions for beads workflow
-└── README.md
+## System Components
 
-Per-project repos also run bd:
-├── linkedin-brief/.beads/     ← Project-specific tasks
-├── workspace/.beads/          ← Main workspace tasks
-└── ...                        ← Each syncs independently
-```
+### 1. Beads Task System
+Our git-backed distributed task tracker using the [beads CLI](https://github.com/steveyegge/beads)
 
-## Conventions
+### 2. ERC-8004 Reputation Registry  
+On-chain feedback system for agent reputation (using Ethereum L2 for gas efficiency)
 
-- **Epics** live in beads-hub (cross-cutting concerns)
-- **Project tasks** live in their own repo's `.beads/`
-- **Agents claim work** with `bd update <id> --claim`
-- **Sync often** with `bd sync` (exports JSONL, commits, pushes)
+### 3. Bead-to-Chain Bridge
+Middleware that listens for successful bead completions and submits attestations
 
-## Agent Roster
+### 4. x402 Payment Proofs
+Integration for verifying inter-agent transaction payments
 
-| Agent | ID | Role |
-|-------|----|------|
-| Axiom | `main` | Orchestrator, primary interface |
-| CodeMonkey | `codemonkey` | Specialized coder |
-| LinkedIn Brief | `linkedin-brief` | Feed summaries |
+## Quick Start
 
-## Usage
+For development and testing purposes, run the bridge demonstration script:
 
 ```bash
-# See what's ready to work on
-bd ready --json
-
-# Create a task
-bd create "Implement feature X" -p 1
-
-# Claim and start work
-bd update <id> --claim
-
-# When done
-bd close <id> --reason "Completed"
-bd sync
+./reputation-bridge.sh beads-hub-d5p
 ```
+
+## Integration
+
+The bridge integrates with the standard beads workflow:
+
+1. Agent completes a task and closes the bead using `close-bead.sh`
+2. The bridge detects the successful completion
+3. On-chain feedback is submitted to the Reputation Registry
+4. Verifiable reputation record is created
+
+## Issues & Tasks
+
+See [beads-hub-d5p](beads-hub-d5p) for the main task related to this work.
