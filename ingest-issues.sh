@@ -58,12 +58,40 @@ gh issue list --repo "$REPO" --state open --json number,title,url,body,labels,au
     continue
   fi
 
+  # Enhanced classification logic to properly identify research tasks
+  # Research tasks typically contain keywords such as:
+  # research, documentation, evaluation, analysis, study, investigation
+  IS_RESEARCH_TASK=false
+  TITLE_LOWERCASE=$(echo "$TITLE" | tr '[:upper:]' '[:lower:]')
+  BODY_LOWERCASE=$(echo "$BODY" | tr '[:upper:]' '[:lower:]')
+  
+  # Keywords that generally indicate research tasks
+  RESEARCH_KEYWORDS=("research" "documentation" "evaluation" "analysis" "study" "investigation" "review" "investigate" "mapping" "compliance" "regulatory")
+  
+  for keyword in "${RESEARCH_KEYWORDS[@]}"; do
+    if [[ "$TITLE_LOWERCASE" == *"$keyword"* ]] || [[ "$BODY_LOWERCASE" == *"$keyword"* ]]; then
+      IS_RESEARCH_TASK=true
+      break
+    fi
+  done
+  
   # Create bead from GH issue
   echo "📦 Creating bead for issue #$NUMBER: $TITLE"
-  RESULT=$(bd create "GH#$NUMBER: $TITLE" \
-    --notes "GitHub issue: $URL" \
-    --external-ref "gh-$NUMBER" \
-    --json 2>/dev/null)
+  
+  # Add research label if this looks like a research task
+  if [ "$IS_RESEARCH_TASK" = true ]; then
+    echo "✅ Identified as research task - adding research label"
+    RESULT=$(bd create "GH#$NUMBER: $TITLE" \
+      --notes "GitHub issue: $URL" \
+      --external-ref "gh-$NUMBER" \
+      --labels "research" \
+      --json 2>/dev/null)
+  else
+    RESULT=$(bd create "GH#$NUMBER: $TITLE" \
+      --notes "GitHub issue: $URL" \
+      --external-ref "gh-$NUMBER" \
+      --json 2>/dev/null)
+  fi
 
   BEAD_ID=$(echo "$RESULT" | jq -r '.id // empty')
   if [ -z "$BEAD_ID" ]; then
