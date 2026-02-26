@@ -1,4 +1,3 @@
 #!/usr/bin/env sh
-# bd pre-commit hook — disabled (bd 0.56 removed 'hook' command)
-# Original: exec bd hook pre-commit "$@"
-exit 0
+# bd pre-commit hook — run bd sync to flush changes before commit
+bd sync
