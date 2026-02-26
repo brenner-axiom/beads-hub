@@ -1,3 +1,4 @@
 #!/usr/bin/env sh
 # bd pre-commit hook — run bd sync to flush changes before commit
+# Updated for bd version 0.56.1 compatibility
 bd sync
