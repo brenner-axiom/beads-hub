@@ -7,7 +7,7 @@ cd "$(dirname "$0")"
 BD="${BD:-bd}"
 
 echo "🔄 Syncing beads..."
-$BD sync 2>/dev/null || true
+$BD dolt pull 2>/dev/null || true
 
 echo "🛫 Regenerating flight board..."
 bash generate-board.sh
