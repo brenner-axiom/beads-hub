@@ -14,7 +14,12 @@ git pull --rebase
 2. `bd update <id> --claim` — claim a task (atomic, prevents conflicts)
 3. Do the work
 4. `bd close <id> --reason "Completed: summary"` 
-5. `bd sync` — push changes
+5. Commit and push changes:
+   ```bash
+   git add .
+   git commit -m "Complete work on <bead-id>"
+   git push
+   ```
 
 ## Creating Tasks
 
@@ -28,7 +33,12 @@ bd create "Title" -p 1 --assign codemonkey --json
 ## Rules
 
 - Always use `--json` for output
-- Always `bd sync` after changes
+- Always commit and push changes after bd commands:
+  ```bash
+  git add .
+  git commit -m "Update <bead-id>"
+  git push
+  ```
 - Claim before working
 - Include bead ID in git commits: `git commit -m "Fix X (bd-abc)"`
 - Don't use `bd edit` (requires interactive editor)
@@ -132,7 +142,8 @@ For more details, see README.md and docs/QUICKSTART.md.
 4. **PUSH TO REMOTE** - This is MANDATORY:
    ```bash
    git pull --rebase
-   bd sync
+   git add .
+   git commit -m "Sync changes"
    git push
    git status  # MUST show "up to date with origin"
    ```
