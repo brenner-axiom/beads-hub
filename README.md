@@ -13,6 +13,7 @@ This project implements a bridge between the #B4mad beads task system and the ER
 - **[Reputation Bridge Design](docs/reputation-bridge-design.md)**: Complete technical design for the bridge system
 - **[ERC-8004 Summary](docs/erc8004-reputation-system-summary.md)**: Executive summary and implementation plan
 - **[ERC-8004 Research](../pages/content/research/2026-02-24-erc8004-agent-identity.md)**: Detailed analysis of ERC-8004 specification
+- **[Value Per Token as Governance Metric](docs/research/2026-03-04-value-per-token-governance.md)**: Research on VPT as an organizational governance metric for agent fleets
 
 ## System Components
 
